@@ -9,10 +9,8 @@ const ServicesGDPLineChart = ({ data, selectedYear }) => {
 
     const yearData = data.filter(d => +d.year === +selectedYear);
 
-    // Group data by continent
     const grouped = d3.group(yearData, d => d.continent);
 
-    // Compute averages per continent
     const avgData = Array.from(grouped, ([continent, values]) => ({
       continent,
       avgGDP: d3.mean(values, d => +d.gdp),
@@ -21,7 +19,7 @@ const ServicesGDPLineChart = ({ data, selectedYear }) => {
 
     const continents = avgData.map(d => d.continent);
 
-    const margin = { top: 20, right: 80, bottom: 40, left: 60 };
+    const margin = { top: 70, right: 40, bottom: 40, left: 60 };
     const width = 380 - margin.left - margin.right;
     const height = 260 - margin.top - margin.bottom;
 
@@ -32,11 +30,43 @@ const ServicesGDPLineChart = ({ data, selectedYear }) => {
       .attr("width", width + margin.left + margin.right)
       .attr("height", height + margin.top + margin.bottom);
 
+    const legend = svg
+      .append("g")
+      .attr("transform", `translate(${margin.left}, 10)`);
+
+    const itemsPerRow = 2;
+    const colWidth = width / itemsPerRow;
+
+    continents.forEach((continent, i) => {
+      const row = Math.floor(i / itemsPerRow);
+      const col = i % itemsPerRow;
+
+      const group = legend
+        .append("g")
+        .attr(
+          "transform",
+          `translate(${col * colWidth}, ${row * 18})`
+        );
+
+      group
+        .append("rect")
+        .attr("width", 10)
+        .attr("height", 10)
+        .attr("fill", d3.schemeTableau10[i % 10]);
+
+      group
+        .append("text")
+        .attr("x", 15)
+        .attr("y", 9)
+        .style("font-size", "10px")
+        .text(continent);
+    });
+
+    // ===== CHART =====
     const chart = svg
       .append("g")
       .attr("transform", `translate(${margin.left},${margin.top})`);
 
-    // Scales
     const x = d3
       .scaleLinear()
       .domain([0, d3.max(avgData, d => d.avgGDP)])
@@ -61,11 +91,11 @@ const ServicesGDPLineChart = ({ data, selectedYear }) => {
 
     chart.append("g").call(d3.axisLeft(y));
 
-    // Axis Labels
+    // Axis labels
     chart
       .append("text")
       .attr("x", width / 2)
-      .attr("y", height + 35)
+      .attr("y", height + 30)
       .attr("text-anchor", "middle")
       .style("font-size", "11px")
       .text("Average GDP");
@@ -79,7 +109,7 @@ const ServicesGDPLineChart = ({ data, selectedYear }) => {
       .style("font-size", "11px")
       .text("% Service Workers");
 
-    // Sort continents by GDP for proper line drawing
+    // Sort data
     const sortedData = avgData.sort((a, b) => a.avgGDP - b.avgGDP);
 
     const line = d3
@@ -87,7 +117,7 @@ const ServicesGDPLineChart = ({ data, selectedYear }) => {
       .x(d => x(d.avgGDP))
       .y(d => y(d.avgServices));
 
-    // Draw line
+    // Line
     chart
       .append("path")
       .datum(sortedData)
@@ -96,7 +126,7 @@ const ServicesGDPLineChart = ({ data, selectedYear }) => {
       .attr("stroke-width", 2)
       .attr("d", line);
 
-    // Draw points
+    // Points
     chart
       .selectAll("circle")
       .data(sortedData)
@@ -107,48 +137,15 @@ const ServicesGDPLineChart = ({ data, selectedYear }) => {
       .attr("r", 6)
       .attr("fill", d => color(d.continent));
 
-    // Labels near points
-    chart
-      .selectAll(".label")
-      .data(sortedData)
-      .enter()
-      .append("text")
-      .attr("x", d => x(d.avgGDP) + 8)
-      .attr("y", d => y(d.avgServices) + 4)
-      .style("font-size", "10px")
-      .text(d => d.continent);
-
-    // Legend
-    const legend = svg
-      .append("g")
-      .attr("transform", `translate(${width + 20}, 20)`);
-
-    continents.forEach((continent, i) => {
-      const row = legend
-        .append("g")
-        .attr("transform", `translate(0, ${i * 18})`);
-
-      row
-        .append("rect")
-        .attr("width", 10)
-        .attr("height", 10)
-        .attr("fill", color(continent));
-
-      row
-        .append("text")
-        .attr("x", 15)
-        .attr("y", 9)
-        .style("font-size", "10px")
-        .text(continent);
-    });
+    // Labels
 
   }, [data, selectedYear]);
 
   return (
     <div>
-      <h4 style={{ marginBottom: "10px" }}>
-        Avg GDP vs Service Workers ({selectedYear})
-      </h4>
+      <h5 style={{ marginBottom: "10px", textAlign: "center" }}>
+        Avg GDP vs Service Workers(salaried class) ({selectedYear})
+      </h5>
       <svg ref={svgRef}></svg>
     </div>
   );

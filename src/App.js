@@ -18,11 +18,15 @@ function App() {
     d3.csv("/gapminder_data_graphs.csv").then(res => {
       setData(res);
       console.log("Data loaded:", res);
+
       const initialSelection = {};
       res.forEach(d => {
-        if (!initialSelection[d.continent]) initialSelection[d.continent] = new Set();
+        if (!initialSelection[d.continent]) {
+          initialSelection[d.continent] = new Set();
+        }
         initialSelection[d.continent].add(d.country);
       });
+
       setSelectedCountries(initialSelection);
     });
   }, []);
@@ -40,7 +44,6 @@ function App() {
       <div style={styles.filtersPanel}>
         <h2 style={styles.panelTitle}>Filters</h2>
         <div style={styles.filtersContainer}>
-          {/* Country Filter */}
           <div style={styles.countryFilterSection}>
             <CountryFilter
               data={data}
@@ -50,7 +53,6 @@ function App() {
             />
           </div>
 
-          {/* Year Filter */}
           <div style={styles.otherFilterSection}>
             <YearFilter
               data={data}
@@ -59,7 +61,6 @@ function App() {
             />
           </div>
 
-          {/* GDP Filter */}
           <div style={styles.otherFilterSection}>
             <GDPRangeFilter
               data={data}
@@ -73,36 +74,52 @@ function App() {
       {/* Dashboard */}
       <div style={styles.dashboard}>
         <div style={styles.chartContainer}>
+
+          {/* FIRST ROW */}
           <div style={styles.firstRow}>
-            <div style={{ ...styles.card, width: "70%" }}>
+            <div style={{ ...styles.card, width: "70%", flexDirection: "column" }}>
+              <h4 style={styles.chartTitle}>
+                GDP vs Life Expectancy (Bubble Size = CO2 Emissions)
+              </h4>
               <BubbleScatterChart
                 data={filteredData}
                 selectedYear={selectedYear}
               />
             </div>
 
-            <div style={{ ...styles.card, width: "40%" }}>
+            <div style={{ ...styles.card, width: "40%", flexDirection: "column" }}>
+              <h4 style={styles.chartTitle}>
+              </h4>
               <ServicesGDPLineChart
                 data={filteredData}
                 selectedYear={selectedYear}
               />
             </div>
           </div>
+
+          {/* SECOND ROW */}
           <div style={styles.chartRow}>
-            <div style={{ ...styles.card, width: "50%" }}>
+            <div style={{ ...styles.card, width: "50%", flexDirection: "column" }}>
+              <h4 style={styles.chartTitle}>
+                Continent-wise Economic Comparison based on CO2 emmission
+              </h4>
               <ContinentComparisonChart
                 data={filteredData}
                 selectedYear={selectedYear}
               />
             </div>
 
-            <div style={{ ...styles.card, width: "50%" }}>
+            <div style={{ ...styles.card, width: "50%", flexDirection: "column" }}>
+              <h4 style={styles.chartTitle}>
+                GDP vs Human Development Index (HDI)
+              </h4>
               <GDPHDIScatterChart
                 data={filteredData}
                 selectedYear={selectedYear}
               />
             </div>
           </div>
+
         </div>
       </div>
     </div>
@@ -135,14 +152,14 @@ const styles = {
     display: "flex",
     flexDirection: "column",
     height: "100%",
-    gap: "8px", // small gap between filters
+    gap: "8px",
   },
   countryFilterSection: {
-    height: "50%",       // 50% of panel height
-    overflowY: "auto",   // scrollable if content overflows
+    height: "50%",
+    overflowY: "auto",
   },
   otherFilterSection: {
-    height: "18%",       // fixed 25% height for Year/GDP filters
+    height: "18%",
   },
   firstRow: {
     display: "flex",
@@ -173,6 +190,12 @@ const styles = {
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
+  },
+  chartTitle: {
+    fontSize: "14px",
+    fontWeight: "600",
+    marginBottom: "10px",
+    textAlign: "center",
   },
 };
 
